@@ -1,0 +1,135 @@
+version: '3'
+
+env:
+  DOCKER_COMPOSE_CMD: docker compose
+
+tasks:
+
+  build_containers:
+    desc: "Собрать Docker контейнеры (Linux/macOS)"
+    platforms: [linux, darwin]
+    cmds:
+      - $DOCKER_COMPOSE_CMD build --build-arg uid=$(id -u) --build-arg user=$USER
+    aliases: [ bc ]
+
+  build_containers_windows:
+    desc: "Собрать Docker контейнеры (Windows)"
+    platforms: [windows]
+    cmds:
+      - $DOCKER_COMPOSE_CMD build --build-arg uid=1000 --build-arg user=www-data
+    aliases: [ bcw ]
+
+  build:
+    desc: "Собрать Docker контейнеры (кроссплатформенно)"
+    cmds:
+      - task: "build_containers_{{OS}}"
+
+  build_containers_linux:
+    internal: true
+    cmds:
+      - $DOCKER_COMPOSE_CMD build --build-arg uid=$(id -u) --build-arg user=$USER
+
+  build_containers_darwin:
+    internal: true
+    cmds:
+      - $DOCKER_COMPOSE_CMD build --build-arg uid=$(id -u) --build-arg user=$USER
+
+  up:
+    desc: "Запустить контейнеры"
+    cmds:
+      - $DOCKER_COMPOSE_CMD up -d
+
+  down:
+    desc: "Остановить контейнеры"
+    cmds:
+      - $DOCKER_COMPOSE_CMD down
+
+  restart:
+    desc: "Перезапустить контейнеры"
+    cmds:
+      - task: down
+      - task: up
+
+  install_laravel:
+    desc: "Установить Laravel (только для нового проекта)"
+    aliases: [ il ]
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app composer create-project laravel/laravel temp
+      - $DOCKER_COMPOSE_CMD exec app sh -c "shopt -s dotglob 2>/dev/null; mv temp/* temp/.* . 2>/dev/null || true; rmdir temp 2>/dev/null || true"
+      - $DOCKER_COMPOSE_CMD exec app chmod -R 777 storage bootstrap/cache
+      - $DOCKER_COMPOSE_CMD exec app php artisan key:generate
+
+  setup:
+    desc: "Полная установка (Linux/macOS): сборка, запуск и установка Laravel"
+    platforms: [linux, darwin]
+    cmds:
+      - task: build_containers
+      - task: up
+      - sleep 3
+      - task: install_laravel
+
+  setup_windows:
+    desc: "Полная установка (Windows): сборка, запуск и установка Laravel"
+    platforms: [windows]
+    cmds:
+      - task: build_containers_windows
+      - task: up
+      - timeout /t 3 /nobreak >nul 2>&1 || sleep 3
+      - task: install_laravel
+
+  composer:
+    desc: "Выполнить команду composer (например: task composer -- install)"
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app composer {{.CLI_ARGS}}
+
+  artisan:
+    desc: "Выполнить команду artisan (например: task artisan -- migrate)"
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app php artisan {{.CLI_ARGS}}
+
+  migrate:
+    desc: "Запустить миграции"
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app php artisan migrate
+
+  migrate_fresh:
+    desc: "Пересоздать базу данных с миграциями"
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app php artisan migrate:fresh
+
+  seed:
+    desc: "Запустить сиды"
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app php artisan db:seed
+
+  shell:
+    desc: "Войти в контейнер app"
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app bash
+
+  logs:
+    desc: "Показать логи всех контейнеров"
+    cmds:
+      - $DOCKER_COMPOSE_CMD logs -f {{.CLI_ARGS}}
+
+  ps:
+    desc: "Показать статус контейнеров"
+    cmds:
+      - $DOCKER_COMPOSE_CMD ps
+
+  clear_cache:
+    desc: "Очистить весь кэш Laravel"
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app php artisan optimize:clear
+
+  install_deps:
+    desc: "Установить зависимости для существующего проекта"
+    cmds:
+      - $DOCKER_COMPOSE_CMD exec app composer install
+      - $DOCKER_COMPOSE_CMD exec app php artisan key:generate
+      - task: fix_permissions
+
+  fix_permissions:
+    desc: "Исправить права доступа (выполняется от root)"
+  cmds:
+    - $DOCKER_COMPOSE_CMD exec -u root app chmod -R 777 storage bootstrap/cache
