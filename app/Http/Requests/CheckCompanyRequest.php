@@ -38,9 +38,9 @@ class CheckCompanyRequest extends ApiFormRequest
             'building' => ['string'],
             'activities' => ['string'],
             'activities_tree' => ['string'],
-            'latitude' => ['numeric:strict','required_with:longitude,radius_in_meters'],
-            'longitude' => ['numeric:strict','required_with:latitude,radius_in_meters'],
-            'radius_in_meters' => ['numeric:strict','required_with:latitude,longitude'],
+            'latitude' => ['numeric','required_with:longitude,radius_in_meters'],
+            'longitude' => ['numeric','required_with:latitude,radius_in_meters'],
+            'radius_in_meters' => ['numeric','required_with:latitude,longitude'],
         ];
     }
 

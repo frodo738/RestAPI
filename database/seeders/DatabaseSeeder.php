@@ -100,8 +100,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'building' => 'Невский 12',
-                'latitude' => 456,
-                'longitude' => 963,
+                'latitude' => 55.751244 ,
+                'longitude' => 37.618423,
             ],
             [
                 'building' => 'Удельная 45',
