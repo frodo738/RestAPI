@@ -30,12 +30,16 @@ readonly class CompanyService implements CompanyServiceInterface
 
         $companies = [];
         foreach ($result as $company) {
-            $building = new BuildingResponseDTO(
-                $company->building->id,
-                $company->building->title,
-                $company->building->latitude,
-                $company->building->longitude,
-            );
+            if ($company->building){
+                $building = new BuildingResponseDTO(
+                    $company->building->id,
+                    $company->building->title,
+                    $company->building->latitude,
+                    $company->building->longitude,
+                );
+            } else {
+                $building = null;
+            }
 
             $activities = [];
             foreach ($company->activities as $activity) {
