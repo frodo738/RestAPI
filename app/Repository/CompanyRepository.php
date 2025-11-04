@@ -8,16 +8,16 @@ use Illuminate\Support\Collection;
 
 class CompanyRepository implements CompanyRepositoryInterface
 {
-    public function getCompanies(CompanySearchDTO $companySearchDTO): Collection
+    public function getCompanies(CompanySearchDTO $companySearchDTO,array $activityTreeID): Collection
     {
         $companies = Company::query()->with('phones');
 
         if ($companySearchDTO->id) {
-            $companies->where('id', $companySearchDTO->id);
+            $companies->where('companies.id', $companySearchDTO->id);
         }
 
         if ($companySearchDTO->title) {
-            $companies->where('title', 'like', '%' . $companySearchDTO->title . '%');
+            $companies->where('companies.title', 'like', '%' . $companySearchDTO->title . '%');
         }
 
         if ($companySearchDTO->building ||
@@ -26,7 +26,7 @@ class CompanyRepository implements CompanyRepositoryInterface
         {
             $companies->whereHas('building', function ($query) use ($companySearchDTO) {
                 if ($companySearchDTO->building) {
-                    $query->where('title', 'like', '%' . $companySearchDTO->building . '%');
+                    $query->where('buildings.title', 'like', '%' . $companySearchDTO->building . '%');
                 }
 
                 if ($companySearchDTO->longitude && $companySearchDTO->latitude && $companySearchDTO->radiusInMeters) {
@@ -41,9 +41,15 @@ class CompanyRepository implements CompanyRepositoryInterface
             });
         }
 
-        if ($companySearchDTO->activities) {
-            $companies->whereHas('activities', function ($query) use ($companySearchDTO) {
-                $query->where('title', '=', $companySearchDTO->activities);
+        if ($companySearchDTO->activities || $activityTreeID) {
+            $companies->whereHas('activities', function ($query) use ($companySearchDTO, $activityTreeID) {
+                if ($companySearchDTO->activities) {
+                    $query->where('activities.title', '=', $companySearchDTO->activities);
+                }
+
+                if ($activityTreeID) {
+                    $query->whereIn('activities.id', $activityTreeID);
+                }
             });
         }
 

@@ -8,5 +8,5 @@ use Illuminate\Support\Collection;
 
 interface CompanyRepositoryInterface
 {
-    public function getCompanies(CompanySearchDTO $companySearchDTO): Collection;
+    public function getCompanies(CompanySearchDTO $companySearchDTO, array $activityTreeID): Collection;
 }

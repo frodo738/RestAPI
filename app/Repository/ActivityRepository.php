@@ -6,13 +6,16 @@ use App\Models\Activity;
 
 class ActivityRepository implements ActivityRepositoryInterface
 {
-    public function getActivitiesIdFromTree($title): array
+    public function getActivitiesIdFromTree(string $title): array
     {
         $activity = Activity::query()->where('title', $title)->first();
+        if (!$activity) {
+            return [];
+        }
         return $this->getDescendantsWithinDepth($activity, env('ACTIVITY_DEPTH', 3));
     }
 
-    private function getDescendantsWithinDepth(Activity $activity, $depth): array
+    private function getDescendantsWithinDepth(Activity $activity, int $depth): array
     {
         $ids = [$activity->id];
         if ($depth > 0) {
@@ -21,6 +24,6 @@ class ActivityRepository implements ActivityRepositoryInterface
                 $ids = array_merge($ids, $this->getDescendantsWithinDepth($child, $depth - 1));
             }
         }
-        return $ids;
+        return array_unique($ids);
     }
 }

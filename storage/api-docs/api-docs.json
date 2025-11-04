@@ -1,0 +1,332 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Laravel API Documentation",
+        "description": "API documentation for Laravel project",
+        "contact": {
+            "email": "admin@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/company": {
+            "get": {
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Search companies",
+                "description": "Returns list of companies based on search criteria. You can search by ID, title, building, activities or by geographic location with radius.",
+                "operationId": "getCompanies",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "Поиск организации по идентификатору(id)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "company_title",
+                        "in": "query",
+                        "description": "Поиск организации по названию",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Автомойка в центре"
+                        }
+                    },
+                    {
+                        "name": "building",
+                        "in": "query",
+                        "description": "Cписок организаций находящихся в здании по названию",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Невский"
+                        }
+                    },
+                    {
+                        "name": "activities",
+                        "in": "query",
+                        "description": "Поиск организации по виду определенному виду деятельности",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Еда"
+                        }
+                    },
+                    {
+                        "name": "activities_tree",
+                        "in": "query",
+                        "description": "Поиск организации по виду деятельности по дереву",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Легковые"
+                        }
+                    },
+                    {
+                        "name": "latitude",
+                        "in": "query",
+                        "description": "Координаты широты (обязательно с долготой и радиусом в метрах)",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 55.7538
+                        }
+                    },
+                    {
+                        "name": "longitude",
+                        "in": "query",
+                        "description": "Координата долготы (обязательно с широтой и радиусом в метрах)",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 37.6212
+                        }
+                    },
+                    {
+                        "name": "radius_in_meters",
+                        "in": "query",
+                        "description": "Радиус поиска в метрах (обязательно с широтой и долготой)",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 5000
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CompanyResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "latitude": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The latitude field is required when longitude / radius in meters is present."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ActivityResponseDTO": {
+                "title": "Activity Response",
+                "description": "Activity data",
+                "required": [
+                    "id",
+                    "title"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Activity ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "description": "Activity title",
+                        "type": "string",
+                        "example": "Manufacturing"
+                    }
+                },
+                "type": "object"
+            },
+            "BuildingResponseDTO": {
+                "title": "Building Response",
+                "description": "Building data",
+                "required": [
+                    "id",
+                    "title",
+                    "latitude",
+                    "longitude"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Building ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "description": "Building title",
+                        "type": "string",
+                        "example": "Office Building A"
+                    },
+                    "latitude": {
+                        "description": "Building latitude",
+                        "type": "number",
+                        "format": "float",
+                        "example": 55.751244
+                    },
+                    "longitude": {
+                        "description": "Building longitude",
+                        "type": "number",
+                        "format": "float",
+                        "example": 37.618423
+                    }
+                },
+                "type": "object"
+            },
+            "CompanyResponseDTO": {
+                "title": "Company Response",
+                "description": "Company data",
+                "required": [
+                    "id",
+                    "title",
+                    "building",
+                    "activities",
+                    "phones"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Company ID",
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "title": {
+                        "description": "Company title",
+                        "type": "string",
+                        "example": "Example Company Ltd"
+                    },
+                    "building": {
+                        "$ref": "#/components/schemas/BuildingResponseDTO"
+                    },
+                    "activities": {
+                        "description": "List of activities",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ActivityResponseDTO"
+                        }
+                    },
+                    "phones": {
+                        "description": "List of phone numbers",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "+7 (999) 123-45-67"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "CheckCompanyRequest": {
+                "title": "Check Company Request",
+                "description": "Request parameters for searching companies",
+                "properties": {
+                    "id": {
+                        "description": "Company ID",
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "company_title": {
+                        "description": "Company title",
+                        "type": "string",
+                        "example": "Example Company Ltd"
+                    },
+                    "building": {
+                        "description": "Building name",
+                        "type": "string",
+                        "example": "Office Building A"
+                    },
+                    "activities": {
+                        "description": "Company activities",
+                        "type": "string",
+                        "example": "Manufacturing"
+                    },
+                    "activities_tree": {
+                        "description": "Activities hierarchy",
+                        "type": "string",
+                        "example": "Industry/Manufacturing/Production"
+                    },
+                    "latitude": {
+                        "description": "Latitude coordinate (required with longitude and radius)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 55.751244
+                    },
+                    "longitude": {
+                        "description": "Longitude coordinate (required with latitude and radius)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 37.618423
+                    },
+                    "radius_in_meters": {
+                        "description": "Search radius in meters (required with latitude and longitude)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 1000
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Enter token in format: Bearer {token}",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Companies",
+            "description": "API endpoints for companies"
+        }
+    ]
+}

@@ -25,9 +25,8 @@ readonly class CompanyService implements CompanyServiceInterface
         $activityTreeID = [];
         if ($companySearchDTO->activitiesTree){
             $activityTreeID = $this->activityRepository->getActivitiesIdFromTree($companySearchDTO->activitiesTree);
-            dd($activityTreeID);
         }
-        $result = $this->companyRepository->getCompanies($companySearchDTO);
+        $result = $this->companyRepository->getCompanies($companySearchDTO, $activityTreeID);
 
         $companies = [];
         foreach ($result as $company) {
