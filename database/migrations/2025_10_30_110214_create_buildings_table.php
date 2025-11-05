@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('buildings', function (Blueprint $table) {
             $table->id();
             $table->string("title")->unique();
-            $table->float("latitude");
-            $table->float("longitude");
+            $table->float("latitude")->index();
+            $table->float("longitude")->index();
             $table->timestamps();
             $table->softDeletes();
         });
